@@ -1,11 +1,11 @@
-use std::ffi::{c_char, CStr, CString};
+use std::ffi::{c_char, c_void, CStr, CString};
 use std::ptr::null_mut;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
-use elec_sys::{comp2info, elec_comp_t, elec_comp_type_t, gen_set_rpm_cb, walk_comps};
+use elec_sys::{comp2info, elec_comp_t, elec_comp_type_t, gen_set_rpm_cb};
 
 use elec::System;
 
@@ -18,7 +18,7 @@ fn main() {
     configure_acfutils("test");
     let sys = System::new(&args[1]);
     unsafe {
-        walk_comps(sys.sys(), Some(setup_binds), null_mut());
+        sys.walk_comps(Some(setup_binds), null_mut());
     }
 
     if !sys.can_start() {
@@ -60,11 +60,8 @@ extern "C" fn get_gen_rpm(_comp: *mut elec_comp_t, _userinfo: *mut c_void) -> f6
 
 unsafe extern "C" fn setup_binds(comp: *mut elec_comp_t, _userinfo: *mut c_void) {
     let info = *comp2info(comp);
-    match info.type_ {
-        elec_comp_type_t::ELEC_GEN => {
-            gen_set_rpm_cb(comp, Some(get_gen_rpm));
-        }
-        _ => {}
+    if info.type_ == elec_comp_type_t::ELEC_GEN {
+        gen_set_rpm_cb(comp, Some(get_gen_rpm));
     }
 }
 

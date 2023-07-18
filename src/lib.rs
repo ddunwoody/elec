@@ -54,9 +54,13 @@ impl System {
         }
     }
 
-    #[must_use]
-    pub fn sys(&self) -> *mut elec_sys_t {
-        self.sys
+    #[allow(clippy::missing_safety_doc)]
+    pub unsafe fn walk_comps(
+        &self,
+        cb: Option<unsafe extern "C" fn(*mut elec_comp_t, *mut c_void)>,
+        userinfo: *mut c_void,
+    ) {
+        unsafe { elec_sys::walk_comps(self.sys, cb, userinfo) }
     }
 }
 
