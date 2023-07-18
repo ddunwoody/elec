@@ -5,13 +5,13 @@ use elec_sys::{
 };
 use std::ffi::{c_char, c_void, CStr, CString};
 use std::ptr::null_mut;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    println!("{:?}", args);
-
     if args.len() != 2 {
         println!("Must specify a libelec file");
     }
@@ -27,14 +27,30 @@ fn main() {
         return;
     }
 
+    let running = Arc::new(AtomicBool::new(true));
+    let r = running.clone();
+
+    ctrlc::set_handler(move || {
+        r.store(false, Ordering::SeqCst);
+    })
+    .expect("Error setting Ctrl-C handler");
+
     if sys.start() {
-        println!("System started");
-        for _ in 0..10 {
-            unsafe {
-                walk_comps(sys.sys(), Some(print_batts), null_mut());
-            }
+        println!("System started (press Ctrl-C to stop)");
+        while running.load(Ordering::SeqCst) {
             thread::sleep(Duration::from_millis(100));
-            println!("loop");
+            // unsafe {
+            //     walk_comps(sys.sys(), Some(print_batts), null_mut());
+            // }
+            if let Some(load) = sys.comp_find("LOAD_1") {
+                println!(
+                    "{}: inputs {:.2}V {:.2}A {:.2}W",
+                    load.name(),
+                    load.in_volts(),
+                    load.in_amps(),
+                    load.in_pwr(),
+                );
+            }
         }
     }
 
