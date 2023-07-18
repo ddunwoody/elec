@@ -1,14 +1,13 @@
-use elec::System;
-use elec_sys::{
-    comp2info, comp_get_in_amps, comp_get_incap_volts, comp_get_out_amps, comp_get_out_pwr,
-    comp_get_out_volts, elec_comp_t, elec_comp_type_t, gen_set_rpm_cb, walk_comps,
-};
-use std::ffi::{c_char, c_void, CStr, CString};
+use std::ffi::{c_char, CStr, CString};
 use std::ptr::null_mut;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+
+use elec_sys::{comp2info, elec_comp_t, elec_comp_type_t, gen_set_rpm_cb, walk_comps};
+
+use elec::System;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -39,9 +38,6 @@ fn main() {
         println!("System started (press Ctrl-C to stop)");
         while running.load(Ordering::SeqCst) {
             thread::sleep(Duration::from_millis(100));
-            // unsafe {
-            //     walk_comps(sys.sys(), Some(print_batts), null_mut());
-            // }
             if let Some(load) = sys.comp_find("LOAD_1") {
                 println!(
                     "{}: inputs {:.2}V {:.2}A {:.2}W",
@@ -72,22 +68,6 @@ unsafe extern "C" fn setup_binds(comp: *mut elec_comp_t, _userinfo: *mut c_void)
     }
 }
 
-unsafe extern "C" fn print_batts(comp: *mut elec_comp_t, _userinfo: *mut c_void) {
-    let info = *comp2info(comp);
-
-    match info.type_ {
-        elec_comp_type_t::ELEC_LOAD => {
-            let name = CStr::from_ptr(info.name).to_str().unwrap();
-            let out_volts = comp_get_out_volts(comp);
-            let out_amps = comp_get_out_amps(comp);
-            let out_pwr = comp_get_out_pwr(comp);
-            let incap_volts = comp_get_incap_volts(comp);
-            let in_amps = comp_get_in_amps(comp);
-            println!("{name}, {out_volts}, {out_amps}, {out_pwr}, {incap_volts}, {in_amps}");
-        }
-        _ => {}
-    }
-}
 fn configure_acfutils(prefix: &str) {
     unsafe {
         acfutils_sys::crc64_init();
