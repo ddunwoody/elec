@@ -1,0 +1,9 @@
+[package]
+name = "elec"
+version = "0.1.0"
+edition = "2021"
+authors = ["David Dunwoody <david.dunwoody@gmail.com>"]
+
+[dependencies]
+acfutils-sys = { path = "../acfutils-sys" }
+elec-sys = { path = "../elec-sys" }
