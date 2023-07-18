@@ -5,8 +5,8 @@ edition = "2021"
 authors = ["David Dunwoody <david.dunwoody@gmail.com>"]
 
 [dependencies]
-acfutils-sys = { path = "../acfutils-sys" }
-elec-sys = { path = "../elec-sys" }
+acfutils-sys = { git = "https://github.com/ddunwoody/acfutils-sys.git" }
+elec-sys = { git = "https://github.com/ddunwoody/elec-sys.git" }
 
 [dev-dependencies]
 ctrlc = "3.4.0" # for use in test example
