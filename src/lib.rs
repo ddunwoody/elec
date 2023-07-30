@@ -212,7 +212,6 @@ impl Comp {
 #[cfg(test)]
 mod tests {
     use crate::System;
-    use ntest::assert_about_eq;
     use std::path::Path;
 
     #[test]
@@ -235,7 +234,7 @@ mod tests {
         assert!(system.started());
         std::thread::sleep(std::time::Duration::from_millis(50));
 
-        assert_about_eq!(batt.out_volts(), 25.4);
+        assert!((batt.out_volts() - 25.4).abs() < f64::EPSILON);
 
         system.stop();
         assert!(!system.started());

@@ -7,7 +7,3 @@ authors = ["David Dunwoody <david.dunwoody@gmail.com>"]
 [dependencies]
 acfutils-sys = { git = "https://github.com/ddunwoody/acfutils-sys.git" }
 elec-sys = { git = "https://github.com/ddunwoody/elec-sys.git" }
-
-[dev-dependencies]
-ctrlc = "3.4.0" # for use in test example
-ntest = "0.9.0"
