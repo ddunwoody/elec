@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 authors = ["David Dunwoody <david.dunwoody@gmail.com>"]
 
+[features]
+datarefs = ["elec-sys/datarefs"]
+xplane = ["elec-sys/xplane"]
+
 [dependencies]
 acfutils-sys = { git = "https://github.com/ddunwoody/acfutils-sys.git" }
 elec-sys = { git = "https://github.com/ddunwoody/elec-sys.git" }

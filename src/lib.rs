@@ -1,8 +1,17 @@
+/*
+ * Copyright (c) 2023 David Dunwoody.
+ *
+ * All rights reserved.
+ */
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
 
-use elec_sys::{elec_comp_info_t, elec_comp_t, elec_comp_type_t, elec_sys_t};
 use std::ffi::{c_void, CStr, CString};
+
+use elec_sys::{elec_comp_info_t, elec_comp_t, elec_comp_type_t, elec_sys_t};
+
+#[cfg(feature = "xplane")]
+use elec_sys::libelec_vis_t;
 
 pub struct System {
     sys: *mut elec_sys_t,
@@ -61,6 +70,12 @@ impl System {
         userinfo: *mut c_void,
     ) {
         unsafe { elec_sys::libelec_walk_comps(self.sys, cb, userinfo) }
+    }
+
+    #[cfg(feature = "xplane")]
+    #[must_use]
+    pub fn vis(&self, pos_scale: f64, font_sz: f64) -> Vis {
+        unsafe { Vis::new(elec_sys::libelec_vis_new(self.sys, pos_scale, font_sz)) }
     }
 }
 
@@ -207,12 +222,86 @@ impl Comp {
     pub fn userinfo(&self) -> *mut c_void {
         unsafe { elec_sys::libelec_comp_get_userinfo(self.comp) }
     }
+
+    #[must_use]
+    pub fn tied_all(&self) -> bool {
+        unsafe { elec_sys::libelec_tie_get_all(self.comp) }
+    }
+
+    pub fn set_tied_all(&self, tied: bool) {
+        unsafe {
+            elec_sys::libelec_tie_set_all(self.comp, tied);
+        }
+    }
+
+    #[must_use]
+    pub fn cb_get(&self) -> bool {
+        unsafe { elec_sys::libelec_cb_get(self.comp) }
+    }
+
+    pub fn cb_set(&self, closed: bool) {
+        unsafe {
+            elec_sys::libelec_cb_set(self.comp, closed);
+        }
+    }
+}
+
+#[cfg(feature = "xplane")]
+pub struct Vis {
+    vis: *mut libelec_vis_t,
+}
+
+#[cfg(feature = "xplane")]
+impl Vis {
+    fn new(vis: *mut libelec_vis_t) -> Self {
+        Vis { vis }
+    }
+
+    pub fn set_open(&self, open: bool) {
+        unsafe {
+            if open {
+                elec_sys::libelec_vis_open(self.vis);
+            } else {
+                elec_sys::libelec_vis_close(self.vis);
+            }
+        }
+    }
+
+    #[must_use]
+    pub fn open(&self) -> bool {
+        unsafe { elec_sys::libelec_vis_is_open(self.vis) }
+    }
+
+    pub fn set_offset(&self, x: f64, y: f64) {
+        unsafe {
+            let offset = elec_sys::vect2_t { x, y };
+            elec_sys::libelec_vis_set_offset(self.vis, offset);
+        }
+    }
+
+    #[must_use]
+    pub fn offset(&self) -> (f64, f64) {
+        unsafe {
+            let offset = elec_sys::libelec_vis_get_offset(self.vis);
+            (offset.x, offset.y)
+        }
+    }
+}
+
+#[cfg(feature = "xplane")]
+impl Drop for Vis {
+    fn drop(&mut self) {
+        unsafe {
+            elec_sys::libelec_vis_destroy(self.vis);
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::System;
     use std::path::Path;
+
+    use crate::System;
 
     #[test]
     fn can_load_and_run_system() {
