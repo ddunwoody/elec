@@ -10,6 +10,9 @@
 #![deny(clippy::pedantic)]
 #![allow(clippy::missing_panics_doc)]
 
+#[cfg(feature = "xplane")]
+pub mod vis;
+
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_void;
