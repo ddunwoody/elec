@@ -11,3 +11,9 @@ xplane = ["elec-sys/xplane"]
 [dependencies]
 acfutils-sys = { git = "https://github.com/ddunwoody/acfutils-sys.git" }
 elec-sys = { git = "https://github.com/ddunwoody/elec-sys.git" }
+
+[patch."https://github.com/ddunwoody/acfutils-sys.git"]
+acfutils-sys = { path = "../acfutils-sys" }
+
+[patch."https://github.com/ddunwoody/elec-sys.git"]
+elec-sys = { path = "../elec-sys" }
