@@ -4,8 +4,8 @@
  * All rights reserved.
  */
 
-use elec_sys::libelec_vis_t;
 use crate::ElecSys;
+use elec_sys::libelec_vis_t;
 
 pub struct ElecVis {
     vis: *mut libelec_vis_t,
@@ -14,10 +14,12 @@ pub struct ElecVis {
 impl ElecVis {
     #[must_use]
     pub fn new(sys: &ElecSys, pos_scale: f64, font_sz: f64) -> ElecVis {
-
-        unsafe { ElecVis { vis: elec_sys::libelec_vis_new(sys.elec, pos_scale, font_sz) } }
+        unsafe {
+            ElecVis {
+                vis: elec_sys::libelec_vis_new(sys.elec, pos_scale, font_sz),
+            }
+        }
     }
-
 
     pub fn set_open(&self, open: bool) {
         unsafe {

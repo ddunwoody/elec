@@ -17,7 +17,23 @@ use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_void;
 
-use elec_sys::{elec_comp_t, ELEC_MAX_SRCS, elec_sys_t, elec_user_cb_t, libelec_add_user_cb, libelec_batt_get_chg_rel, libelec_batt_get_temp, libelec_batt_set_chg_rel, libelec_batt_set_temp, libelec_cb_get, libelec_cb_get_temp, libelec_cb_set, libelec_chgr_get_working, libelec_comp_find, libelec_comp_get_autogen, libelec_comp_get_conn, libelec_comp_get_eff, libelec_comp_get_failed, libelec_comp_get_in_amps, libelec_comp_get_in_freq, libelec_comp_get_in_pwr, libelec_comp_get_in_volts, libelec_comp_get_incap_volts, libelec_comp_get_location, libelec_comp_get_name, libelec_comp_get_num_conns, libelec_comp_get_out_amps, libelec_comp_get_out_freq, libelec_comp_get_out_pwr, libelec_comp_get_out_volts, libelec_comp_get_shorted, libelec_comp_get_srcs, libelec_comp_get_type, libelec_comp_is_AC, libelec_comp_is_powered, libelec_comp_set_failed, libelec_comp_set_shorted, libelec_destroy, libelec_gen_set_random_freq, libelec_gen_set_random_volts, libelec_new, libelec_remove_user_cb, libelec_sys_can_start, libelec_sys_get_time_factor, libelec_sys_is_started, libelec_sys_set_time_factor, libelec_sys_start, libelec_sys_stop, libelec_tie_get_all, libelec_tie_get_list, libelec_tie_get_num_buses, libelec_tie_set_all, libelec_tie_set_list, libelec_walk_comps};
+use elec_sys::{
+    elec_comp_t, elec_sys_t, elec_user_cb_t, libelec_add_user_cb, libelec_batt_get_chg_rel,
+    libelec_batt_get_temp, libelec_batt_set_chg_rel, libelec_batt_set_temp, libelec_cb_get,
+    libelec_cb_get_temp, libelec_cb_set, libelec_chgr_get_working, libelec_comp_find,
+    libelec_comp_get_autogen, libelec_comp_get_conn, libelec_comp_get_eff, libelec_comp_get_failed,
+    libelec_comp_get_in_amps, libelec_comp_get_in_freq, libelec_comp_get_in_pwr,
+    libelec_comp_get_in_volts, libelec_comp_get_incap_volts, libelec_comp_get_location,
+    libelec_comp_get_name, libelec_comp_get_num_conns, libelec_comp_get_out_amps,
+    libelec_comp_get_out_freq, libelec_comp_get_out_pwr, libelec_comp_get_out_volts,
+    libelec_comp_get_shorted, libelec_comp_get_srcs, libelec_comp_get_type, libelec_comp_is_AC,
+    libelec_comp_is_powered, libelec_comp_set_failed, libelec_comp_set_shorted, libelec_destroy,
+    libelec_gen_set_random_freq, libelec_gen_set_random_volts, libelec_new, libelec_remove_user_cb,
+    libelec_sys_can_start, libelec_sys_get_time_factor, libelec_sys_is_started,
+    libelec_sys_set_time_factor, libelec_sys_start, libelec_sys_stop, libelec_tie_get_all,
+    libelec_tie_get_list, libelec_tie_get_num_buses, libelec_tie_set_all, libelec_tie_set_list,
+    libelec_walk_comps, ELEC_MAX_SRCS,
+};
 
 pub struct ElecSys {
     elec: *mut elec_sys_t,
@@ -37,9 +53,7 @@ impl ElecSys {
         }
     }
     pub fn start(&mut self) -> bool {
-        unsafe {
-            libelec_sys_start(self.elec)
-        }
+        unsafe { libelec_sys_start(self.elec) }
     }
     pub fn stop(&mut self) {
         unsafe {
@@ -48,15 +62,11 @@ impl ElecSys {
     }
     #[must_use]
     pub fn is_started(&self) -> bool {
-        unsafe {
-            libelec_sys_is_started(self.elec)
-        }
+        unsafe { libelec_sys_is_started(self.elec) }
     }
     #[must_use]
     pub fn can_start(&self) -> bool {
-        unsafe {
-            libelec_sys_can_start(self.elec)
-        }
+        unsafe { libelec_sys_can_start(self.elec) }
     }
     pub fn sys_set_time_factor(&mut self, time_factor: f64) {
         unsafe {
@@ -65,22 +75,18 @@ impl ElecSys {
     }
     #[must_use]
     pub fn sys_get_time_factor(&self) -> f64 {
-        unsafe {
-            libelec_sys_get_time_factor(self.elec)
-        }
+        unsafe { libelec_sys_get_time_factor(self.elec) }
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
-    pub fn add_user_cb(&mut self, pre: bool, cb: elec_user_cb_t,
-                       userinfo: *mut c_void) {
+    pub fn add_user_cb(&mut self, pre: bool, cb: elec_user_cb_t, userinfo: *mut c_void) {
         unsafe {
             libelec_add_user_cb(self.elec, pre, cb, userinfo);
         }
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
-    pub fn remove_user_cb(&mut self, pre: bool, cb: elec_user_cb_t,
-                          userinfo: *mut c_void) {
+    pub fn remove_user_cb(&mut self, pre: bool, cb: elec_user_cb_t, userinfo: *mut c_void) {
         unsafe {
             libelec_remove_user_cb(self.elec, pre, cb, userinfo);
         }
@@ -97,8 +103,7 @@ impl ElecSys {
             Some(ElecComp { comp })
         }
     }
-    extern "C" fn comp_walk_cb(comp: *mut elec_comp_t,
-                               userinfo: *mut c_void) {
+    extern "C" fn comp_walk_cb(comp: *mut elec_comp_t, userinfo: *mut c_void) {
         unsafe {
             let comps = userinfo.cast::<Vec<ElecComp>>();
             (*comps).push(ElecComp { comp });
@@ -108,8 +113,11 @@ impl ElecSys {
         let mut comps: Vec<ElecComp> = vec![];
         unsafe {
             let comps_ptr: *mut Vec<ElecComp> = &mut comps;
-            libelec_walk_comps(self.elec, Some(Self::comp_walk_cb),
-                               comps_ptr.cast::<std::ffi::c_void>());
+            libelec_walk_comps(
+                self.elec,
+                Some(Self::comp_walk_cb),
+                comps_ptr.cast::<std::ffi::c_void>(),
+            );
         };
         comps
     }
@@ -161,9 +169,7 @@ impl ElecComp {
         }
     }
     fn get_type(&self) -> CompType {
-        unsafe {
-            std::mem::transmute(libelec_comp_get_type(self.comp))
-        }
+        unsafe { std::mem::transmute(libelec_comp_get_type(self.comp)) }
     }
     #[must_use]
     pub fn get_location(&self) -> String {
@@ -186,7 +192,9 @@ impl ElecComp {
     pub fn get_conn(&self, i: usize) -> ElecComp {
         unsafe {
             assert!(i < Self::get_num_conns(self));
-            ElecComp { comp: libelec_comp_get_conn(self.comp, i) }
+            ElecComp {
+                comp: libelec_comp_get_conn(self.comp, i),
+            }
         }
     }
     #[allow(non_snake_case)]
@@ -244,11 +252,8 @@ impl ElecComp {
     #[must_use]
     pub fn get_srcs(&self) -> Vec<ElecComp> {
         const MAX_SRCS: usize = ELEC_MAX_SRCS as usize;
-        let mut srcs_array: [*mut elec_comp_t; MAX_SRCS] =
-            [std::ptr::null_mut(); MAX_SRCS];
-        let n = unsafe {
-            libelec_comp_get_srcs(self.comp, srcs_array.as_mut_ptr()) as usize
-        };
+        let mut srcs_array: [*mut elec_comp_t; MAX_SRCS] = [std::ptr::null_mut(); MAX_SRCS];
+        let n = unsafe { libelec_comp_get_srcs(self.comp, srcs_array.as_mut_ptr()) as usize };
         let mut srcs: Vec<ElecComp> = vec![];
         for src in srcs_array.iter().take(n) {
             srcs.push(ElecComp { comp: *src });
@@ -300,12 +305,14 @@ impl ElecComp {
      */
     pub fn tie_set_list(&mut self, list: &[ElecComp]) {
         assert_eq!(self.get_type(), CompType::Tie);
-        let comps: Vec<*const elec_comp_t> = list.iter()
-            .map(|c| c.comp as *const elec_comp_t)
-            .collect();
+        let comps: Vec<*const elec_comp_t> =
+            list.iter().map(|c| c.comp as *const elec_comp_t).collect();
         unsafe {
-            libelec_tie_set_list(self.comp, comps.len(),
-                                 comps.as_ptr().cast::<*mut elec_sys::elec_comp_s>());
+            libelec_tie_set_list(
+                self.comp,
+                comps.len(),
+                comps.as_ptr().cast::<*mut elec_sys::elec_comp_s>(),
+            );
         }
     }
     pub fn tie_set_all(&mut self, tied: bool) {
@@ -321,15 +328,15 @@ impl ElecComp {
     pub fn tie_get_list(&self) -> Vec<ElecComp> {
         assert_eq!(self.get_type(), CompType::Tie);
         let n_comps = unsafe { libelec_tie_get_num_buses(self.comp) };
-        let mut comps: Vec<*mut elec_comp_t> =
-            vec![std::ptr::null_mut(); n_comps];
+        let mut comps: Vec<*mut elec_comp_t> = vec![std::ptr::null_mut(); n_comps];
         unsafe {
-            libelec_tie_get_list(self.comp, n_comps,
-                                 comps.as_mut_ptr().cast::<*mut elec_sys::elec_comp_s>());
+            libelec_tie_get_list(
+                self.comp,
+                n_comps,
+                comps.as_mut_ptr().cast::<*mut elec_sys::elec_comp_s>(),
+            );
         };
-        comps.into_iter()
-            .map(|c| ElecComp { comp: c })
-            .collect()
+        comps.into_iter().map(|c| ElecComp { comp: c }).collect()
     }
     #[must_use]
     pub fn tie_get_num_buses(&self) -> usize {
@@ -377,33 +384,42 @@ mod tests {
     use crate::ElecSys;
 
     fn get_filename() -> String {
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/test/test.net").to_str().unwrap().to_string()
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("resources/test/test.net")
+            .to_str()
+            .unwrap()
+            .to_string()
     }
 
     #[test]
     fn load_net() {
         unsafe { crc64_init() };
-        ElecSys::new(&get_filename())
-            .expect("Failed to load net");
+        ElecSys::new(&get_filename()).expect("Failed to load net");
     }
 
     #[test]
     fn load_and_run_net() {
         unsafe { crc64_init() };
-        let mut sys = ElecSys::new(&get_filename())
-            .expect("Failed to load net");
+        let mut sys = ElecSys::new(&get_filename()).expect("Failed to load net");
         sys.start();
         std::thread::sleep(std::time::Duration::new(1, 0));
         for comp in &sys.all_comps() {
             if !comp.get_autogen() {
-                println!(concat!(
-                "{} ({:?}) U_in:{:.1}V  U_out:{:.1}V  ",
-                "I_in:{:.1}A  I_out:{:.1}A  ",
-                "W_in:{:.1}W  W_out:{:.1}W"),
-                         comp.get_name(), comp.get_type(),
-                         comp.in_volts(), comp.out_volts(),
-                         comp.in_amps(), comp.out_amps(),
-                         comp.in_pwr(), comp.out_pwr());
+                println!(
+                    concat!(
+                        "{} ({:?}) U_in:{:.1}V  U_out:{:.1}V  ",
+                        "I_in:{:.1}A  I_out:{:.1}A  ",
+                        "W_in:{:.1}W  W_out:{:.1}W"
+                    ),
+                    comp.get_name(),
+                    comp.get_type(),
+                    comp.in_volts(),
+                    comp.out_volts(),
+                    comp.in_amps(),
+                    comp.out_amps(),
+                    comp.in_pwr(),
+                    comp.out_pwr()
+                );
             }
         }
     }
@@ -411,19 +427,25 @@ mod tests {
     #[test]
     fn list_all_comps() {
         unsafe { crc64_init() };
-        let sys = ElecSys::new(&get_filename())
-            .expect("Failed to load net");
+        let sys = ElecSys::new(&get_filename()).expect("Failed to load net");
         for comp in &sys.all_comps() {
             if !comp.get_autogen() {
-                println!(concat!(
-                "{} of type {:?}; location: \"{}\"; ",
-                "U_in:{}V  U_out:{}V  I_in:{}A  ",
-                "I_out:{}A  W_in:{}W  W_out:{}W"),
-                         comp.get_name(), comp.get_type(),
-                         comp.get_location(),
-                         comp.in_volts(), comp.out_volts(),
-                         comp.in_amps(), comp.out_amps(),
-                         comp.in_pwr(), comp.out_pwr());
+                println!(
+                    concat!(
+                        "{} of type {:?}; location: \"{}\"; ",
+                        "U_in:{}V  U_out:{}V  I_in:{}A  ",
+                        "I_out:{}A  W_in:{}W  W_out:{}W"
+                    ),
+                    comp.get_name(),
+                    comp.get_type(),
+                    comp.get_location(),
+                    comp.in_volts(),
+                    comp.out_volts(),
+                    comp.in_amps(),
+                    comp.out_amps(),
+                    comp.in_pwr(),
+                    comp.out_pwr()
+                );
             }
         }
     }
