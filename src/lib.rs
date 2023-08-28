@@ -169,7 +169,8 @@ impl ElecComp {
                 .to_string()
         }
     }
-    fn get_type(&self) -> CompType {
+    #[must_use]
+    pub fn get_type(&self) -> CompType {
         unsafe { std::mem::transmute(libelec_comp_get_type(self.comp)) }
     }
     #[must_use]
