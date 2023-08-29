@@ -13,12 +13,14 @@
 #[cfg(feature = "xplane")]
 pub mod vis;
 
+use acfutils::conf::Conf;
+use acfutils::cstring;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_void;
 
 use elec_sys::{
-    conf_t, elec_comp_t, elec_get_load_cb_t, elec_sys_t, elec_user_cb_t, libelec_add_user_cb,
+    elec_comp_t, elec_get_load_cb_t, elec_sys_t, elec_user_cb_t, libelec_add_user_cb,
     libelec_batt_get_chg_rel, libelec_batt_get_temp, libelec_batt_set_chg_rel,
     libelec_batt_set_temp, libelec_cb_get, libelec_cb_get_temp, libelec_cb_set,
     libelec_chgr_get_working, libelec_comp_find, libelec_comp_get_autogen, libelec_comp_get_conn,
@@ -80,19 +82,19 @@ impl ElecSys {
         unsafe { libelec_sys_get_time_factor(self.elec) }
     }
 
-    #[allow(clippy::not_unsafe_ptr_arg_deref)]
-    pub fn serialize(&self, ser: *mut conf_t, prefix: &str) {
+    pub fn serialize(&self, ser: &Conf, prefix: &str) {
         unsafe {
-            let c_prefix = CString::new(prefix).unwrap();
-            libelec_serialize(self.elec, ser, c_prefix.as_ptr());
+            cstring(prefix, |p| {
+                libelec_serialize(self.elec, ser.conf_t().cast(), p);
+            });
         }
     }
 
-    #[allow(clippy::not_unsafe_ptr_arg_deref)]
-    pub fn deserialize(&mut self, ser: *mut conf_t, prefix: &str) -> bool {
+    pub fn deserialize(&mut self, ser: &Conf, prefix: &str) -> bool {
         unsafe {
-            let c_prefix = CString::new(prefix).unwrap();
-            libelec_deserialize(self.elec, ser, c_prefix.as_ptr())
+            cstring(prefix, |p| {
+                libelec_deserialize(self.elec, ser.conf_t().cast(), p)
+            })
         }
     }
 

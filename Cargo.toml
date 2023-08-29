@@ -9,5 +9,6 @@ datarefs = ["elec-sys/datarefs"]
 xplane = ["elec-sys/xplane"]
 
 [dependencies]
+acfutils = { git = "https://github.com/ddunwoody/acfutils.git" }
 acfutils-sys = { git = "https://github.com/ddunwoody/acfutils-sys.git" }
 elec-sys = { git = "https://github.com/ddunwoody/elec-sys.git" }
