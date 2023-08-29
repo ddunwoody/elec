@@ -18,7 +18,7 @@ use std::ffi::CString;
 use std::os::raw::c_void;
 
 use elec_sys::{
-    elec_comp_t, elec_get_load_cb_t, elec_sys_t, elec_user_cb_t, libelec_add_user_cb,
+    conf_t, elec_comp_t, elec_get_load_cb_t, elec_sys_t, elec_user_cb_t, libelec_add_user_cb,
     libelec_batt_get_chg_rel, libelec_batt_get_temp, libelec_batt_set_chg_rel,
     libelec_batt_set_temp, libelec_cb_get, libelec_cb_get_temp, libelec_cb_set,
     libelec_chgr_get_working, libelec_comp_find, libelec_comp_get_autogen, libelec_comp_get_conn,
@@ -28,12 +28,13 @@ use elec_sys::{
     libelec_comp_get_num_conns, libelec_comp_get_out_amps, libelec_comp_get_out_freq,
     libelec_comp_get_out_pwr, libelec_comp_get_out_volts, libelec_comp_get_shorted,
     libelec_comp_get_srcs, libelec_comp_get_type, libelec_comp_is_AC, libelec_comp_is_powered,
-    libelec_comp_set_failed, libelec_comp_set_shorted, libelec_comp_set_userinfo, libelec_destroy,
-    libelec_gen_set_random_freq, libelec_gen_set_random_volts, libelec_load_set_load_cb,
-    libelec_new, libelec_remove_user_cb, libelec_sys_can_start, libelec_sys_get_time_factor,
-    libelec_sys_is_started, libelec_sys_set_time_factor, libelec_sys_start, libelec_sys_stop,
-    libelec_tie_get_all, libelec_tie_get_list, libelec_tie_get_num_buses, libelec_tie_set_all,
-    libelec_tie_set_list, libelec_walk_comps, ELEC_MAX_SRCS,
+    libelec_comp_set_failed, libelec_comp_set_shorted, libelec_comp_set_userinfo,
+    libelec_deserialize, libelec_destroy, libelec_gen_set_random_freq,
+    libelec_gen_set_random_volts, libelec_load_set_load_cb, libelec_new, libelec_remove_user_cb,
+    libelec_serialize, libelec_sys_can_start, libelec_sys_get_time_factor, libelec_sys_is_started,
+    libelec_sys_set_time_factor, libelec_sys_start, libelec_sys_stop, libelec_tie_get_all,
+    libelec_tie_get_list, libelec_tie_get_num_buses, libelec_tie_set_all, libelec_tie_set_list,
+    libelec_walk_comps, ELEC_MAX_SRCS,
 };
 
 pub struct ElecSys {
@@ -77,6 +78,22 @@ impl ElecSys {
     #[must_use]
     pub fn sys_get_time_factor(&self) -> f64 {
         unsafe { libelec_sys_get_time_factor(self.elec) }
+    }
+
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
+    pub fn serialize(&self, ser: *mut conf_t, prefix: &str) {
+        unsafe {
+            let c_prefix = CString::new(prefix).unwrap();
+            libelec_serialize(self.elec, ser, c_prefix.as_ptr());
+        }
+    }
+
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
+    pub fn deserialize(&mut self, ser: *mut conf_t, prefix: &str) -> bool {
+        unsafe {
+            let c_prefix = CString::new(prefix).unwrap();
+            libelec_deserialize(self.elec, ser, c_prefix.as_ptr())
+        }
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
