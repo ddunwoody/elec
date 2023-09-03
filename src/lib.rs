@@ -10,7 +10,7 @@
 #![deny(clippy::pedantic)]
 #![allow(clippy::missing_panics_doc)]
 
-#[cfg(feature = "xplane")]
+#[cfg(feature = "vis")]
 pub mod vis;
 
 use acfutils::conf::Conf;
@@ -42,6 +42,9 @@ use elec_sys::{
 pub struct ElecSys {
     elec: *mut elec_sys_t,
 }
+
+unsafe impl Send for ElecSys {}
+unsafe impl Sync for ElecSys {}
 
 impl ElecSys {
     #[must_use]

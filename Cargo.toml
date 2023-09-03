@@ -6,7 +6,7 @@ authors = ["David Dunwoody <david.dunwoody@gmail.com>"]
 
 [features]
 datarefs = ["elec-sys/datarefs"]
-xplane = ["elec-sys/xplane"]
+vis = ["elec-sys/vis"]
 
 [dependencies]
 acfutils = { git = "https://github.com/ddunwoody/acfutils.git" }
