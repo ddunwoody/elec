@@ -162,6 +162,9 @@ pub struct ElecComp {
     comp: *mut elec_comp_t,
 }
 
+unsafe impl Send for ElecComp {}
+unsafe impl Sync for ElecComp {}
+
 #[derive(Debug, PartialEq)]
 #[repr(C)]
 pub enum CompType {
