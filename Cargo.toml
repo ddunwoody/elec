@@ -11,4 +11,5 @@ vis = ["elec-sys/vis"]
 [dependencies]
 acfutils = { git = "https://github.com/ddunwoody/acfutils.git" }
 acfutils-sys = { git = "https://github.com/ddunwoody/acfutils-sys.git" }
+anyhow = "1.0.75"
 elec-sys = { git = "https://github.com/ddunwoody/elec-sys.git" }

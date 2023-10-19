@@ -7,18 +7,16 @@
  * Copyright 2023 Saso Kiselkov. All rights reserved.
  */
 #![deny(clippy::all)]
-#![deny(clippy::pedantic)]
-#![allow(clippy::missing_panics_doc)]
+#![warn(clippy::pedantic)]
+#![allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
 
-#[cfg(feature = "vis")]
-pub mod vis;
-
-use acfutils::conf::Conf;
-use acfutils::cstring;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_void;
 
+use acfutils::conf::Conf;
+use acfutils::cstring;
+use anyhow::{bail, Result};
 use elec_sys::{
     elec_comp_t, elec_get_load_cb_t, elec_sys_t, elec_user_cb_t, libelec_add_user_cb,
     libelec_batt_get_chg_rel, libelec_batt_get_temp, libelec_batt_set_chg_rel,
@@ -39,6 +37,10 @@ use elec_sys::{
     libelec_walk_comps, ELEC_MAX_SRCS,
 };
 
+#[cfg(feature = "vis")]
+pub mod vis;
+
+#[derive(Debug)]
 pub struct ElecSys {
     elec: *mut elec_sys_t,
 }
@@ -47,18 +49,17 @@ unsafe impl Send for ElecSys {}
 unsafe impl Sync for ElecSys {}
 
 impl ElecSys {
-    #[must_use]
-    pub fn new(filename: &str) -> Option<ElecSys> {
+    pub fn new(filename: &str) -> Result<ElecSys> {
         let elec = unsafe {
             let c_filename = CString::new(filename).unwrap();
             libelec_new(c_filename.as_ptr())
         };
         if elec.is_null() {
-            None
-        } else {
-            Some(ElecSys { elec })
+            bail!("Unable to create electrical system from {filename}")
         }
+        Ok(ElecSys { elec })
     }
+
     pub fn start(&mut self) -> bool {
         unsafe { libelec_sys_start(self.elec) }
     }
@@ -102,30 +103,29 @@ impl ElecSys {
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
-    pub fn add_user_cb(&mut self, pre: bool, cb: elec_user_cb_t, userinfo: *mut c_void) {
+    pub fn add_user_cb(&self, pre: bool, cb: elec_user_cb_t, userinfo: *mut c_void) {
         unsafe {
             libelec_add_user_cb(self.elec, pre, cb, userinfo);
         }
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
-    pub fn remove_user_cb(&mut self, pre: bool, cb: elec_user_cb_t, userinfo: *mut c_void) {
+    pub fn remove_user_cb(&self, pre: bool, cb: elec_user_cb_t, userinfo: *mut c_void) {
         unsafe {
             libelec_remove_user_cb(self.elec, pre, cb, userinfo);
         }
     }
-    #[must_use]
-    pub fn comp_find(&self, name: &str) -> Option<ElecComp> {
+    pub fn comp_find(&self, name: &str) -> Result<ElecComp> {
         let comp = unsafe {
             let c_name = CString::new(name).unwrap();
             libelec_comp_find(self.elec, c_name.as_ptr())
         };
         if comp.is_null() {
-            None
-        } else {
-            Some(ElecComp { comp })
+            bail!("Could not find component with name {name}");
         }
+        Ok(ElecComp { comp })
     }
+
     extern "C" fn comp_walk_cb(comp: *mut elec_comp_t, userinfo: *mut c_void) {
         unsafe {
             let comps = userinfo.cast::<Vec<ElecComp>>();
@@ -157,13 +157,10 @@ impl Drop for ElecSys {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug)]
 pub struct ElecComp {
     comp: *mut elec_comp_t,
 }
-
-unsafe impl Send for ElecComp {}
-unsafe impl Sync for ElecComp {}
 
 #[derive(Debug, PartialEq)]
 #[repr(C)]
@@ -332,8 +329,7 @@ impl ElecComp {
      */
     pub fn tie_set_list(&mut self, list: &[ElecComp]) {
         assert_eq!(self.get_type(), CompType::Tie);
-        let comps: Vec<*const elec_comp_t> =
-            list.iter().map(|c| c.comp as *const elec_comp_t).collect();
+        let comps: Vec<*const elec_comp_t> = list.iter().map(|c| c.comp.cast_const()).collect();
         unsafe {
             libelec_tie_set_list(
                 self.comp,
@@ -405,20 +401,20 @@ impl ElecComp {
      * Callbacks
      */
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
-    pub fn comp_set_userinfo(&mut self, userinfo: *mut c_void) {
+    pub fn comp_set_userinfo(&self, userinfo: *mut c_void) {
         unsafe {
             libelec_comp_set_userinfo(self.comp, userinfo);
         }
     }
 
-    pub fn load_set_load_cb(&mut self, cb: elec_get_load_cb_t) {
+    pub fn load_set_load_cb(&self, cb: elec_get_load_cb_t) {
         assert_eq!(self.get_type(), CompType::Load);
         unsafe {
             libelec_load_set_load_cb(self.comp, cb);
         }
     }
 
-    pub fn load_remove_load_cb(&mut self) {
+    pub fn load_remove_load_cb(&self) {
         assert_eq!(self.get_type(), CompType::Load);
         unsafe {
             libelec_load_set_load_cb(self.comp, None);
