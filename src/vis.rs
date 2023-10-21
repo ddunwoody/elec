@@ -52,7 +52,6 @@ impl ElecVis {
     }
 }
 
-#[cfg(feature = "xplane")]
 impl Drop for ElecVis {
     fn drop(&mut self) {
         unsafe {
